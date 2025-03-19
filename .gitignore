@@ -29,3 +29,6 @@ go.work.sum
 
 # binary
 rssagg
+
+# http client
+requests.http
