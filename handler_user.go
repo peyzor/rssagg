@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/peyzor/rssagg/internal/auth"
 	"github.com/peyzor/rssagg/internal/database"
 	"net/http"
 	"time"
@@ -34,5 +35,21 @@ func (sc *ServerConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	responseWithJson(w, 200, user)
+	responseWithJson(w, 201, databaseUserToUser(user))
+}
+
+func (sc *ServerConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		responseWithError(w, 403, fmt.Sprintf("auth error: %v", err))
+		return
+	}
+
+	user, err := sc.DB.GetUserByAPIKey(r.Context(), apiKey)
+	if err != nil {
+		responseWithError(w, 400, fmt.Sprintf("user not found: %v", err))
+		return
+	}
+
+	responseWithJson(w, 200, databaseUserToUser(user))
 }
