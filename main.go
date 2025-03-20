@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-type ServerConfig struct {
+type serverConfig struct {
 	DB *database.Queries
 }
 
@@ -32,7 +32,7 @@ func main() {
 		log.Fatal("can't connect to database")
 	}
 
-	serverConfig := ServerConfig{
+	serverConfig := serverConfig{
 		DB: database.New(conn),
 	}
 
@@ -55,7 +55,8 @@ func main() {
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerErr)
 	v1Router.Post("/users", serverConfig.handlerCreateUser)
-	v1Router.Get("/users", serverConfig.handlerGetUser)
+	v1Router.Get("/users", serverConfig.middlewareAuth(serverConfig.handlerGetUser))
+	v1Router.Post("/feeds", serverConfig.middlewareAuth(serverConfig.handlerCreateFeed))
 
 	router.Mount("/v1", v1Router)
 
