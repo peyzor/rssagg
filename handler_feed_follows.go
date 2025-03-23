@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/peyzor/rssagg/internal/database"
 	"net/http"
@@ -46,4 +47,24 @@ func (sc *serverConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Req
 	}
 
 	responseWithJson(w, 200, databaseFeedFollowsToFeedFollows(feedFollows))
+}
+
+func (sc *serverConfig) handlerDeleteFeedFollow(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedFollowIDStr := chi.URLParam(r, "feedFollowID")
+	feedFollowID, err := uuid.Parse(feedFollowIDStr)
+	if err != nil {
+		responseWithError(w, 400, fmt.Sprintf("couldn't parse uuid: %v", err))
+		return
+	}
+
+	err = sc.DB.DeleteFeedFollow(r.Context(), database.DeleteFeedFollowParams{
+		ID:     feedFollowID,
+		UserID: user.ID,
+	})
+	if err != nil {
+		responseWithError(w, 400, fmt.Sprintf("couldn't delete feed follow: %v", err))
+		return
+	}
+
+	responseWithJson(w, 204, struct{}{})
 }
