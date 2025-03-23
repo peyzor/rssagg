@@ -39,3 +39,12 @@ func (sc *serverConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request
 
 	responseWithJson(w, 201, databaseFeedToFeed(feed))
 }
+
+func (sc *serverConfig) handlerGetFeeds(w http.ResponseWriter, r *http.Request) {
+	feeds, err := sc.DB.GetFeeds(r.Context())
+	if err != nil {
+		responseWithError(w, 400, fmt.Sprintf("couldn't get feeds: %v", err))
+	}
+
+	responseWithJson(w, 200, databaseFeedsToFeeds(feeds))
+}
