@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type serverConfig struct {
@@ -32,14 +33,17 @@ func main() {
 		log.Fatal("can't connect to database")
 	}
 
+	db := database.New(conn)
 	serverConfig := serverConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("PORT is not found")
 	}
+
+	go startScraping(db, 10, time.Minute)
 
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
